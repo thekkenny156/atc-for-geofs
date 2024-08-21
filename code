@@ -1,0 +1,354 @@
+(function () {
+    // Create the small ATC window
+    let atcWindow = document.createElement("div");
+    atcWindow.style.position = "fixed";
+    atcWindow.style.bottom = "20px";
+    atcWindow.style.right = "20px";
+    atcWindow.style.width = "350px"; // Width to accommodate new layout
+    atcWindow.style.height = "550px"; // Increased height to fit all elements
+    atcWindow.style.backgroundColor = "#f0f0f0";
+    atcWindow.style.border = "2px solid #000";
+    atcWindow.style.padding = "10px";
+    atcWindow.style.fontFamily = "Arial, sans-serif";
+    atcWindow.style.zIndex = "10000"; // Ensure the window is on top
+    atcWindow.style.cursor = "move"; // Make it draggable
+    atcWindow.style.display = "none"; // Initially hidden
+    atcWindow.id = "atcWindow";
+    document.body.appendChild(atcWindow);
+
+    // Add a header
+    let header = document.createElement("h4");
+    header.innerText = "ATC Communication";
+    atcWindow.appendChild(header);
+
+    // Add a message display area
+    let messageDisplay = document.createElement("div");
+    messageDisplay.style.height = "50px";
+    messageDisplay.style.overflowY = "auto";
+    messageDisplay.style.border = "1px solid #ccc";
+    messageDisplay.style.padding = "5px";
+    messageDisplay.style.backgroundColor = "#fff";
+    messageDisplay.innerText = "Choose an option below:";
+    atcWindow.appendChild(messageDisplay);
+
+    // Add choice for Landing or Taking Off
+    let flightChoice = document.createElement("div");
+    flightChoice.style.marginTop = "10px";
+    atcWindow.appendChild(flightChoice);
+
+    let takeOffRadio = document.createElement("input");
+    takeOffRadio.type = "radio";
+    takeOffRadio.name = "flightType";
+    takeOffRadio.id = "takeOff";
+    takeOffRadio.checked = true; // Default to Take Off
+    flightChoice.appendChild(takeOffRadio);
+
+    let takeOffLabel = document.createElement("label");
+    takeOffLabel.setAttribute("for", "takeOff");
+    takeOffLabel.innerText = "Taking Off";
+    flightChoice.appendChild(takeOffLabel);
+
+    let landingRadio = document.createElement("input");
+    landingRadio.type = "radio";
+    landingRadio.name = "flightType";
+    landingRadio.id = "landing";
+    flightChoice.appendChild(landingRadio);
+
+    let landingLabel = document.createElement("label");
+    landingLabel.setAttribute("for", "landing");
+    landingLabel.innerText = "Landing";
+    flightChoice.appendChild(landingLabel);
+
+    // Container for the input fields and the keyboard
+    let inputContainer = document.createElement("div");
+    inputContainer.style.display = "flex";
+    inputContainer.style.flexDirection = "column";
+    inputContainer.style.marginTop = "10px";
+    atcWindow.appendChild(inputContainer);
+
+    // Create input sections for plane name, airport, and runway
+    let planeInput = document.createElement("input");
+    planeInput.type = "text";
+    planeInput.style.width = "100%";
+    planeInput.style.marginTop = "10px";
+    planeInput.style.padding = "6px";
+    planeInput.placeholder = "Enter your plane name (e.g., B737)";
+    inputContainer.appendChild(planeInput);
+
+    let airportInput = document.createElement("input");
+    airportInput.type = "text";
+    airportInput.style.width = "100%";
+    airportInput.style.marginTop = "10px";
+    airportInput.style.padding = "6px";
+    airportInput.placeholder = "Enter airport (ICAO or name)";
+    airportInput.style.display = "none"; // Initially hidden
+    inputContainer.appendChild(airportInput);
+
+    let runwayInput = document.createElement("input");
+    runwayInput.type = "text";
+    runwayInput.style.width = "100%";
+    runwayInput.style.marginTop = "10px";
+    runwayInput.style.padding = "6px";
+    runwayInput.placeholder = "Enter runway number (e.g., 21L)";
+    runwayInput.style.display = "none"; // Initially hidden
+    inputContainer.appendChild(runwayInput);
+
+    // Create an on-screen keyboard for easier input
+    let keyboard = document.createElement("div");
+    keyboard.style.marginTop = "10px";
+    keyboard.style.display = "flex";
+    keyboard.style.flexWrap = "wrap";
+    keyboard.style.gap = "2px";
+    keyboard.style.justifyContent = "space-between"; // Space between keys
+    keyboard.style.backgroundColor = "#e0e0e0";
+    keyboard.style.padding = "5px";
+    keyboard.style.boxSizing = "border-box";
+    inputContainer.appendChild(keyboard);
+
+    const keys = [
+        "A", "B", "C", "D", "E", "F", "G", "H", "I", "J",
+        "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T",
+        "U", "V", "W", "X", "Y", "Z", "1", "2", "3", "4",
+        "5", "6", "7", "8", "9", "0", "←", "Clear"
+    ];
+
+    // Keep track of the currently focused input
+    let focusedInput = planeInput; // Default focus on plane input
+
+    // Function to set the focus on the input field
+    function setFocus(inputField) {
+        focusedInput = inputField;
+        inputField.focus(); // Ensure the field is focused
+    }
+
+    planeInput.addEventListener("focus", function () {
+        setFocus(planeInput);
+    });
+
+    airportInput.addEventListener("focus", function () {
+        setFocus(airportInput);
+    });
+
+    runwayInput.addEventListener("focus", function () {
+        setFocus(runwayInput);
+    });
+
+    // Generate keyboard buttons
+    keys.forEach(key => {
+        let keyButton = document.createElement("button");
+        keyButton.innerText = key;
+        keyButton.style.padding = "6px";
+        keyButton.style.margin = "2px";
+        keyButton.style.fontSize = "14px";
+        keyButton.style.flex = "1 1 30px"; // Make keys responsive
+        keyButton.style.boxSizing = "border-box";
+        keyboard.appendChild(keyButton);
+
+        keyButton.addEventListener("click", function () {
+            if (!focusedInput) return;
+
+            if (key === "←") {
+                // Backspace
+                focusedInput.value = focusedInput.value.slice(0, -1);
+            } else if (key === "Clear") {
+                // Clear input
+                focusedInput.value = "";
+            } else {
+                // Add character to the currently focused input
+                focusedInput.value += key;
+            }
+        });
+    });
+
+    // Add buttons for submitting, copying, and pasting inputs
+    let nextButton = document.createElement("button");
+    nextButton.innerText = "Next";
+    nextButton.style.width = "100%";
+    nextButton.style.marginTop = "10px";
+    nextButton.style.padding = "8px";
+    nextButton.style.fontSize = "14px";
+    inputContainer.appendChild(nextButton);
+
+    let submitButton = document.createElement("button");
+    submitButton.innerText = "Submit";
+    submitButton.style.width = "100%";
+    submitButton.style.marginTop = "10px";
+    submitButton.style.padding = "8px";
+    submitButton.style.fontSize = "14px";
+    submitButton.style.display = "none"; // Initially hidden
+    inputContainer.appendChild(submitButton);
+
+    let copyButton = document.createElement("button");
+    copyButton.innerText = "Copy";
+    copyButton.style.width = "100%";
+    copyButton.style.marginTop = "10px";
+    copyButton.style.padding = "8px";
+    copyButton.style.fontSize = "14px";
+    inputContainer.appendChild(copyButton);
+
+    let pasteButton = document.createElement("button");
+    pasteButton.innerText = "Paste";
+    pasteButton.style.width = "100%";
+    pasteButton.style.marginTop = "10px";
+    pasteButton.style.padding = "8px";
+    pasteButton.style.fontSize = "14px";
+    inputContainer.appendChild(pasteButton);
+
+    // Storage for copied data
+    let copiedData = {};
+
+    // Handle input progression
+    let step = 1; // 1: Plane input, 2: Airport input, 3: Runway input
+
+    nextButton.addEventListener("click", function () {
+        if (step === 1) {
+            if (planeInput.value.trim() === "") {
+                speak("ATC: Please enter your plane type.");
+                messageDisplay.innerText = "ATC: Please enter your plane type.";
+                return;
+            }
+            planeInput.style.display = "none";
+            airportInput.style.display = "block";
+            airportInput.focus();
+            step = 2;
+        } else if (step === 2) {
+            if (airportInput.value.trim() === "") {
+                speak("ATC: Please enter the airport name.");
+                messageDisplay.innerText = "ATC: Please enter the airport name.";
+                return;
+            }
+            airportInput.style.display = "none";
+            runwayInput.style.display = "block";
+            runwayInput.focus();
+            step = 3;
+            nextButton.style.display = "none"; // Hide Next button
+            submitButton.style.display = "block"; // Show Submit button
+        }
+    });
+
+    // Handle submission
+    submitButton.addEventListener("click", function () {
+        if (runwayInput.value.trim() === "") {
+            speak("ATC: Please enter the runway number.");
+            messageDisplay.innerText = "ATC: Please enter the runway number.";
+            return;
+        }
+
+        let flightType = document.querySelector('input[name="flightType"]:checked').id;
+
+        let action = flightType === "takeOff" ? "Cleared for takeoff to" : "Landing clearance to";
+        messageDisplay.innerText = `ATC: ${action} ${airportInput.value.toUpperCase()} with runway ${runwayInput.value.toUpperCase()} in ${planeInput.value.toUpperCase()}.`;
+        speak(`ATC: ${action} ${airportInput.value.toUpperCase()} with runway ${runwayInput.value.toUpperCase()} in ${planeInput.value.toUpperCase()}.`);
+
+        // Save current input values to copiedData
+        copiedData = {
+            plane: planeInput.value,
+            airport: airportInput.value,
+            runway: runwayInput.value,
+            flightType: flightType
+        };
+
+        // Reset fields and show the plane input again
+        planeInput.value = "";
+        airportInput.value = "";
+        runwayInput.value = "";
+        planeInput.style.display = "block";
+        airportInput.style.display = "none";
+        runwayInput.style.display = "none";
+        nextButton.style.display = "block"; // Show Next button
+        submitButton.style.display = "none"; // Hide Submit button
+        step = 1;
+    });
+
+    // Handle copy button click
+    copyButton.addEventListener("click", function () {
+        copiedData = {
+            plane: planeInput.value,
+            airport: airportInput.value,
+            runway: runwayInput.value,
+            flightType: document.querySelector('input[name="flightType"]:checked').id
+        };
+        speak("ATC: Data copied.");
+        messageDisplay.innerText = "ATC: Data copied.";
+    });
+
+    // Handle paste button click
+    pasteButton.addEventListener("click", function () {
+        if (copiedData.plane) {
+            planeInput.value = copiedData.plane;
+            airportInput.value = copiedData.airport;
+            runwayInput.value = copiedData.runway;
+            document.querySelector(`input[name="flightType"][id="${copiedData.flightType}"]`).checked = true;
+            // Ensure focus is maintained
+            setFocus(document.querySelector(`input[name="flightType"][id="${copiedData.flightType}"]`));
+            speak("ATC: Data pasted.");
+            messageDisplay.innerText = "ATC: Data pasted.";
+        } else {
+            speak("ATC: No data to paste.");
+            messageDisplay.innerText = "ATC: No data to paste.";
+        }
+    });
+
+    // Make the window draggable
+    atcWindow.onmousedown = function (event) {
+        event.preventDefault();
+        let shiftX = event.clientX - atcWindow.getBoundingClientRect().left;
+        let shiftY = event.clientY - atcWindow.getBoundingClientRect().top;
+
+        function moveAt(pageX, pageY) {
+            atcWindow.style.left = pageX - shiftX + 'px';
+            atcWindow.style.top = pageY - shiftY + 'px';
+        }
+
+        moveAt(event.pageX, event.pageY);
+
+        function onMouseMove(event) {
+            moveAt(event.pageX, event.pageY);
+        }
+
+        document.addEventListener("mousemove", onMouseMove);
+
+        document.onmouseup = function () {
+            document.removeEventListener("mousemove", onMouseMove);
+            document.onmouseup = null;
+        };
+    };
+
+    atcWindow.ondragstart = function () {
+        return false;
+    };
+
+    // Add a button to show/hide the ATC window
+    let toggleButton = document.createElement("button");
+    toggleButton.innerText = "Toggle ATC Window";
+    toggleButton.style.position = "fixed";
+    toggleButton.style.bottom = "20px";
+    toggleButton.style.right = "370px"; // Adjusted to not overlap with the ATC window
+    toggleButton.style.padding = "10px";
+    toggleButton.style.zIndex = "9999";
+    toggleButton.style.fontSize = "14px";
+    document.body.appendChild(toggleButton);
+
+    toggleButton.addEventListener("click", function () {
+        atcWindow.style.display = atcWindow.style.display === "none" ? "block" : "none";
+    });
+
+    // Speech synthesis function
+    function speak(text) {
+        if ("speechSynthesis" in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            utterance.volume = 1; // Adjust volume if needed
+            utterance.lang = "en-US";
+            window.speechSynthesis.speak(utterance);
+        } else {
+            console.log("Speech synthesis not supported in this browser.");
+        }
+    }
+})();
+
+
+
+
+edit what u want idc just dont say its yours
